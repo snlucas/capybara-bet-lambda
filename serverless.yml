@@ -1,0 +1,42 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: snlucas
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: capybara-bet
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: capybara-bet-lambda
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+        - "dynamodb:GetItem"
+        - "dynamodb:DeleteItem"
+      Resource: "arn:aws:dynamodb:*:*:table/sorted-number"
+
+resources:
+  Resources:
+    MyDynamoDBTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        TableName: "sorted-number"
+        AttributeDefinitions:
+          - AttributeName: "id"
+            AttributeType: "S"
+        KeySchema:
+          - AttributeName: "id"
+            KeyType: "HASH"
+        BillingMode: PAY_PER_REQUEST
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - httpApi:
+          path: /
+          method: get
+      - schedule:
+          rate: rate(1 day)
+          enabled: true
