@@ -1,69 +1,80 @@
-<!--
-title: 'AWS Simple HTTP Endpoint example in NodeJS'
-description: 'This template demonstrates how to make a simple HTTP API with Node.js running on AWS Lambda and API Gateway using the Serverless Framework.'
-layout: Doc
-framework: v4
-platform: AWS
-language: nodeJS
-authorLink: 'https://github.com/serverless'
-authorName: 'Serverless, Inc.'
-authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
--->
 
-# Serverless Framework Node HTTP API on AWS
+# Capybara Bet Lambda
 
-This template demonstrates how to make a simple HTTP API with Node.js running on AWS Lambda and API Gateway using the Serverless Framework.
+This project is a Serverless service that deploys an AWS Lambda function to generate a random number daily and store it in a DynamoDB table. The Lambda function can be triggered via an HTTP API or scheduled to run every 24 hours. The project also includes a React Native frontend (check it out 👉 [CapybaraBet](link-to-project)) that calls the Lambda function to retrieve the random number and check if the user guessed the correct number.
 
-This template does not include any kind of persistence (database). For more advanced examples, check out the [serverless/examples repository](https://github.com/serverless/examples/) which includes Typescript, Mongo, DynamoDB and other examples.
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Frontend - React Native](#frontend---react-native)
+- [Backend - AWS Lambda](#backend---aws-lambda)
+- [Installation](#installation)
+  - [Backend](#backend)
+- [Usage](#usage)
+  - [Backend Deployment](#backend-deployment)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Overview
+
+This project consists of two main components:
+
+1. **Backend**: A Lambda function that generates and stores a random number in a DynamoDB table named `sorted-number`.
+2. **Frontend**: A React Native app that allows users to guess the random number and check if they win the bet.
+
+## Architecture
+
+- **Lambda Function**: Generates a random number and stores it in DynamoDB.
+- **DynamoDB Table**: Stores the daily random number with a unique key.
+- **API Gateway**: Provides an HTTP endpoint to trigger the Lambda function.
+- **CloudWatch Events**: Schedules the Lambda function to run daily.
+- **React Native Frontend**: Calls the Lambda function to get the random number and checks if the user guessed correctly.
+
+## Frontend - React Native
+
+The React Native app provides a simple user interface where users can:
+
+- Enter their guess for the random number.
+- Submit the guess to the backend (Lambda function) to check if it matches the stored random number.
+- Display a message with an image indicating whether the guess was correct or not.
+
+## Backend - AWS Lambda
+
+The Lambda function is responsible for generating the random number, storing it in DynamoDB, and responding to HTTP requests from the React Native app.
+
+## Installation
+
+### Backend
+
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/yourusername/capybara-bet-lambda.git
+   cd capybara-bet-lambda
+   ```
+
+2. **Install Dependencies:**
+
+   ```bash
+   npm install
 
 ## Usage
 
-### Deployment
+### Backend Deployment
 
-In order to deploy the example, you need to run the following command:
+Deploy the backend using the Serverless Framework:
 
-```
+```bash
 serverless deploy
 ```
 
-After running deploy, you should see output similar to:
+Make sure that your AWS credentials are properly configured in your local environment.
 
-```
-Deploying "serverless-http-api" to stage "dev" (us-east-1)
+## Contributing
 
-✔ Service deployed to stack serverless-http-api-dev (91s)
+Contributions are welcome! Please open an issue or submit a pull request for any changes or enhancements.
 
-endpoint: GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/
-functions:
-  hello: serverless-http-api-dev-hello (1.6 kB)
-```
+## License
 
-_Note_: In current form, after deployment, your API is public and can be invoked by anyone. For production deployments, you might want to configure an authorizer. For details on how to do that, refer to [HTTP API (API Gateway V2) event docs](https://www.serverless.com/framework/docs/providers/aws/events/http-api).
-
-### Invocation
-
-After successful deployment, you can call the created application via HTTP:
-
-```
-curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/
-```
-
-Which should result in response similar to:
-
-```json
-{ "message": "Go Serverless v4! Your function executed successfully!" }
-```
-
-### Local development
-
-The easiest way to develop and test your function is to use the `dev` command:
-
-```
-serverless dev
-```
-
-This will start a local emulator of AWS Lambda and tunnel your requests to and from AWS Lambda, allowing you to interact with your function as if it were running in the cloud.
-
-Now you can invoke the function as before, but this time the function will be executed locally. Now you can develop your function locally, invoke it, and see the results immediately without having to re-deploy.
-
-When you are done developing, don't forget to run `serverless deploy` to deploy the function to the cloud.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
