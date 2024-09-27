@@ -1,9 +1,10 @@
-const { DynamoDBClient, GetItemCommand, PutItemCommand, DeleteItemCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, GetItemCommand, PutItemCommand } = require('@aws-sdk/client-dynamodb');
 
 const TABLE_NAME = 'sorted-number';
 const dynamoDb = new DynamoDBClient({ region: 'us-east-1' });
 
 exports.hello = async (event) => {
+  const today = new Date().toISOString().split('T')[0];
   const uniqueKey = 'daily-random-number';
 
   const getParams = {
@@ -18,36 +19,50 @@ exports.hello = async (event) => {
     let responseMessage;
 
     if (result.Item) {
-      const existingValue = result.Item.value.S;
+      const storedDate = result.Item.date ? result.Item.date.S : null;
 
-      const deleteParams = {
+      if (storedDate === today) {
+        responseMessage = `Date is already set to today (${today}). No update made.`;
+      } else {
+        responseMessage = `Stored date (${storedDate}) is different from today (${today}). Updating value.`;
+        const randomNumber = Math.floor(Math.random() * 10001).toString();
+
+        const putParams = {
+          TableName: TABLE_NAME,
+          Item: {
+            id: { S: uniqueKey },
+            value: { S: randomNumber },
+            date: { S: today },
+          },
+        };
+
+        await dynamoDb.send(new PutItemCommand(putParams));
+      }
+    } else {
+      responseMessage = 'No previous data found. Adding new value for today.';
+      const randomNumber = Math.floor(Math.random() * 10001).toString();
+
+      const putParams = {
         TableName: TABLE_NAME,
-        Key: {
+        Item: {
           id: { S: uniqueKey },
+          value: { S: randomNumber },
+          date: { S: today },
         },
       };
 
-      await dynamoDb.send(new DeleteItemCommand(deleteParams));
-      responseMessage = existingValue;
+      await dynamoDb.send(new PutItemCommand(putParams));
     }
-
-    const randomNumber = Math.floor(Math.random() * 10001).toString();
-
-    const putParams = {
-      TableName: TABLE_NAME,
-      Item: {
-        id: { S: uniqueKey },
-        value: { S: randomNumber },
-      },
-    };
-
-    await dynamoDb.send(new PutItemCommand(putParams));
-    responseMessage = responseMessage || `New random number generated: ${randomNumber}`;
 
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
       body: JSON.stringify({
         message: responseMessage,
+        luckNumber: result.Item ? result.Item.value.S : randomNumber,
       }),
     };
 
